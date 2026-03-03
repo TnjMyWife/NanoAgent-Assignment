@@ -95,8 +95,6 @@ python agent.py "find all .py files and count total lines of code"
 
 ---
 
-*In simplicity lies the seed of infinite possibility.*
-
 ## license
 
 MIT
