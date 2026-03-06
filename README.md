@@ -74,6 +74,8 @@ for _ in range(max_iterations):
 
 The core is just a loop: call model → execute tools → repeat.
 
+Recent hardening keeps the loop running even when a tool call contains malformed JSON arguments or references an unknown tool; those cases are returned to the model as explicit tool errors instead of crashing the agent.
+
 ## capabilities
 
 - `execute_bash`: Run any bash command
