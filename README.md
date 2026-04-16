@@ -1,108 +1,49 @@
-# nanoAgent
+## 目录结构
 
-[中文](./README_CN.md) | English
+```text
+.
+├─ agent.py                  # 原版+注释
+├─ agent-plus.py             # 原版+注释
+├─ agent-claudecode.py       # 原版+注释
+├─ agent-paperread.py        # 实践应用
+├─ MCPClient.py              # MCP 客户端
+├─ .agent/
+│  ├─ mcp.json               # MCP server 配置
+│  ├─ rules/                 # 规则文件
+│  └─ skills/                # 技能文件
+├─ papers/                   # arXiv 下载与本地论文目录
+└─ requirements.txt
+```
 
-> *"The question is not what you look at, but what you see."* — Henry David Thoreau
+## 环境
+- Python 3.10+，建议使用虚拟环境
+- 联网（调用 LLM API 与 OCR / arXiv 工具）
 
-The simplest way to build an agent that can interact with your system.
-
-A minimal implementation of an AI agent using OpenAI's function calling. The agent can execute bash commands, read files, and write files.
-
-If you want to learn more (e.g. what MCP is, and how to fetch tools in a more modern way), see: https://github.com/sanbuphy/nanoMCP
-
-## install
+## 安装
 
 ```bash
 pip install -r requirements.txt
 ```
 
-Set your environment variables:
+## 环境变量
+至少需要配置以下变量：
 
-**macOS/Linux:**
+- DASHSCOPE_API_KEY：Qwen/DashScope API Key
+- PADDLE_OCR_TOKEN：PaddleOCR 接口 Token（用于 PDF OCR）
+
+## 快速开始
+本地 PDF 阅读与总结：
 ```bash
-export OPENAI_API_KEY='your-key-here'
-export OPENAI_BASE_URL='https://api.openai.com/v1'  # optional
-export OPENAI_MODEL='gpt-4o-mini'  # optional
+python agent-paperread.py "帮我读papers目录下的论文并总结贡献、问题背景、方法、实验与局限性"
 ```
 
-**Windows (PowerShell):**
-```powershell
-$env:OPENAI_API_KEY='your-key-here'
-$env:OPENAI_BASE_URL='https://api.openai.com/v1'  # optional
-$env:OPENAI_MODEL='gpt-4o-mini'  # optional
+arXiv 检索 + 阅读：
+```bash
+python agent-paperread.py "帮我找这个月关于智能体记忆系统的预印论文，并挑一篇最相关的阅读"
 ```
 
-**Windows (CMD):**
-```cmd
-set OPENAI_API_KEY=your-key-here
-set OPENAI_BASE_URL=https://api.openai.com/v1
-set OPENAI_MODEL=gpt-4o-mini
-```
-
-## quick start
+复杂任务拆解执行：
 
 ```bash
-python agent.py "list all python files in current directory"
-python agent.py "create a file called hello.txt with 'Hello World'"
-python agent.py "read the contents of README.md"
+python agent-paperread.py --plan "先检索多智能体协作论文，再对比三篇代表作"
 ```
-
-## how it works
-
-The agent uses OpenAI's function calling to:
-1. Receive a task from the user
-2. Decide which tools to use (bash, read_file, write_file)
-3. Execute the tools
-4. Return results to the model
-5. Repeat until task is complete
-
-That's it. ~100 lines of code.
-
-```python
-# Define tools
-tools = [{"type": "function", "function": {...}}]
-
-# Agent loop
-for _ in range(max_iterations):
-    response = client.chat.completions.create(model=model, messages=messages, tools=tools)
-    if not response.choices[0].message.tool_calls:
-        return response.choices[0].message.content
-
-    # Execute tool calls
-    for tool_call in response.choices[0].message.tool_calls:
-        result = available_functions[tool_call.function.name](**args)
-        messages.append({"role": "tool", "content": result})
-```
-
-The core is just a loop: call model → execute tools → repeat.
-
-Recent hardening keeps the loop running even when a tool call contains malformed JSON arguments or references an unknown tool; those cases are returned to the model as explicit tool errors instead of crashing the agent.
-
-## capabilities
-
-- `execute_bash`: Run any bash command
-- `read_file`: Read file contents
-- `write_file`: Write content to files
-
-## examples
-
-```bash
-# System operations
-python agent.py "what's my current directory and what files are in it?"
-
-# File operations
-python agent.py "create a python script that prints hello world"
-
-# Combined tasks
-python agent.py "find all .py files and count total lines of code"
-```
-
----
-
-## license
-
-MIT
-
-────────────────────────────────────────
-
-⏺ *Like a single seed that grows into a forest, one file becomes infinite possibilities.*
